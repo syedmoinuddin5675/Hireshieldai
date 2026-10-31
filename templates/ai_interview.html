@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mx-auto max-w-3xl">
+    <a class="mb-5 inline-block text-xs font-bold text-[#176b58]" href="{{ url_for('candidate_dashboard') }}">&#8592; Back to candidate portal</a>
+    <section class="panel overflow-hidden">
+        <div class="bg-[#172b2a] px-6 py-7 text-white md:px-9"><p class="eyebrow !text-[#d7ed9f]">Practice / round {{ round_num }} of 6</p><h1 class="mt-2 text-2xl font-extrabold">{{ round_name }}</h1><div class="mt-5 grid grid-cols-6 gap-1" aria-label="Round {{ round_num }} of 6">{% for step in range(1, 7) %}<span class="h-1 rounded {% if step <= round_num %}bg-[#d7ed9f]{% else %}bg-white/20{% endif %}"></span>{% endfor %}</div></div>
+        <div class="p-6 md:p-9"><p class="eyebrow">Interviewer prompt</p><div id="interview-question" class="mt-2 border-l-2 border-[#e8775d] bg-[#f5f7f3] px-5 py-4 text-sm leading-7">{{ question }}</div>
+            <div class="mt-4 flex flex-wrap gap-2"><button id="read-question" class="button-muted" type="button">&#9654; Hear question</button><button id="record-answer" class="button-muted" type="button">&#9679; Start speaking</button><span id="voice-status" role="status" aria-live="polite" class="self-center text-xs text-[#647773]">You can speak your answer or type it below.</span></div>
+            <form action="{{ url_for('mock_interview') }}" method="POST" class="mt-5 space-y-4"><input type="hidden" name="round_num" value="{{ round_num }}"><label class="block text-xs font-bold">Your answer<textarea id="interview-answer" name="answer" class="field mt-2 min-h-40 leading-6" required placeholder="Speak your answer or type your reasoning here..."></textarea></label><p class="text-[10px] leading-4 text-[#647773]">Speech recognition depends on browser support and may be processed by your browser’s speech service. Only the resulting text is submitted; this app does not record or store audio.</p><div class="flex flex-col justify-between gap-3 border-t border-[#dce5df] pt-4 sm:flex-row sm:items-center"><p class="max-w-sm text-[10px] leading-4 text-[#647773]">Practice feedback uses a local word-count and topic rubric. It is not a professional hiring assessment.</p><button class="button-primary" type="submit">{% if round_num == 6 %}Finish practice{% else %}Submit and continue{% endif %} <span class="ml-1" aria-hidden="true">&#8594;</span></button></div></form>
+        </div>
+    </section>
+</div>
+<script>
+    const answerField = document.getElementById('interview-answer');
+    const voiceStatus = document.getElementById('voice-status');
+    const recordButton = document.getElementById('record-answer');
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = navigator.language || 'en-US';
+        recognition.addEventListener('result', (event) => {
+            const updatedResults = Array.from(event.results).slice(event.resultIndex);
+            const transcript = updatedResults.map((result) => result[0].transcript).join(' ');
+            const stableTranscript = updatedResults.filter((result) => result.isFinal).map((result) => result[0].transcript).join(' ');
+            if (stableTranscript) answerField.value = `${answerField.value} ${stableTranscript}`.trim();
+            voiceStatus.textContent = transcript ? `Hearing: ${transcript}` : 'Listening...';
+        });
+        recognition.addEventListener('error', () => { voiceStatus.textContent = 'Microphone unavailable. You can type your answer instead.'; });
+        recognition.addEventListener('end', () => { recordButton.dataset.listening = 'false'; recordButton.textContent = '● Start speaking'; voiceStatus.textContent = 'Speech input stopped.'; });
+        recordButton.addEventListener('click', () => {
+            if (recordButton.dataset.listening === 'true') {
+                recognition.stop();
+                recordButton.dataset.listening = 'false';
+                return;
+            }
+            try {
+                recognition.start();
+                recordButton.dataset.listening = 'true';
+                recordButton.textContent = '■ Stop speaking';
+                voiceStatus.textContent = 'Listening...';
+            } catch (error) {
+                voiceStatus.textContent = 'Speech input could not start. You can type your answer instead.';
+            }
+        });
+    } else {
+        recordButton.disabled = true;
+        recordButton.title = 'Speech recognition is not supported by this browser';
+        voiceStatus.textContent = 'Speech recognition is not supported here. You can type your answer.';
+    }
+    document.getElementById('read-question').addEventListener('click', () => {
+        if (!('speechSynthesis' in window)) {
+            voiceStatus.textContent = 'Question audio is not supported here.';
+            return;
+        }
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(document.getElementById('interview-question').textContent.trim()));
+    });
+</script>
+{% endblock %}

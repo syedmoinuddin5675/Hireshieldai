@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mx-auto max-w-xl panel p-6 md:p-9"><p class="eyebrow">Get started</p><h1 class="mt-2 text-2xl font-extrabold">Create your HireShield AI account</h1><p class="mt-2 text-sm text-[#647773]">Choose the workspace that matches how you use HireShield AI.</p>
+    <form action="{{ url_for('register') }}" method="POST" class="mt-6 space-y-4">
+        <label class="block text-xs font-bold">Full name<input type="text" name="name" autocomplete="name" class="field mt-1" required></label>
+        <label class="block text-xs font-bold">Email address<input type="email" name="email" autocomplete="email" class="field mt-1" required></label>
+        <label class="block text-xs font-bold">Password<span class="relative mt-1 block"><input id="register-password" type="password" name="password" autocomplete="new-password" minlength="8" class="field pr-12" required><button type="button" data-password-toggle="register-password" aria-label="Show password" aria-pressed="false" class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-2 text-[#647773] hover:bg-[#f5f7f3]"><svg data-eye-open viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg><svg data-eye-closed viewBox="0 0 24 24" class="hidden h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.7 10.7 0 0 1 12 5c6.4 0 10 7 10 7a14 14 0 0 1-3.1 3.8M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10 10 0 0 0 4-.8"/></svg></button></span></label>
+        <label class="block text-xs font-bold">Workspace role<select name="role" class="field mt-1"><option value="candidate">Candidate / job seeker</option><option value="recruiter">Recruiter / hiring team</option></select></label>
+        <label class="flex items-start gap-2 border-t border-[#dce5df] pt-4 text-xs leading-5 text-[#647773]"><input type="checkbox" name="tc" value="on" required class="mt-1 accent-[#176b58]"><span>I have read and agree to the <a href="{{ url_for('terms') }}" target="_blank" rel="noopener" class="font-bold text-[#176b58] underline underline-offset-2">Terms &amp; Conditions and Privacy Notice</a>.</span></label>
+        <button type="submit" class="button-primary w-full py-3">Create account</button>
+    </form>
+    <p class="mt-5 text-center text-xs text-[#647773]">Already registered? <a href="{{ url_for('index') }}" class="font-bold text-[#176b58] underline underline-offset-2">Sign in</a></p>
+</div>
+{% endblock %}

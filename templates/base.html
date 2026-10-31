@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>HireShield AI | Talent workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --ink: #172b2a; --muted: #647773; --line: #dce5df; --paper: #f5f7f3; --green: #176b58; --lime: #d7ed9f; --coral: #e8775d; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); }
+        h1, h2, h3, h4 { font-family: 'Manrope', sans-serif; }
+        .shell { max-width: 1440px; }
+        .panel { background: white; border: 1px solid var(--line); border-radius: 8px; }
+        .eyebrow { color: var(--green); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+        .field { width: 100%; border: 1px solid var(--line); border-radius: 5px; background: #fff; padding: 10px 12px; font-size: 13px; color: var(--ink); }
+        .field:focus { outline: 2px solid #acd1bf; border-color: var(--green); }
+        .button-primary { border-radius: 5px; background: var(--green); color: white; padding: 10px 14px; font-size: 13px; font-weight: 700; }
+        .button-primary:hover { background: #10513f; }
+        .button-muted { border: 1px solid var(--line); border-radius: 5px; background: white; padding: 9px 12px; font-size: 12px; font-weight: 700; }
+        .button-primary, .button-muted, a { transition: color .18s ease, background-color .18s ease, border-color .18s ease, transform .18s ease; }
+        .button-primary:hover, .button-muted:hover { transform: translateY(-1px); }
+        :focus-visible { outline: 3px solid #e8775d; outline-offset: 3px; }
+        .dashboard-nav { display: flex; gap: 4px; overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: white; padding: 4px; }
+        .dashboard-nav a { flex: 0 0 auto; border-radius: 5px; padding: 9px 12px; color: var(--muted); font-size: 12px; font-weight: 700; }
+        .dashboard-nav a:hover { background: #edf5e6; color: var(--green); }
+        .dashboard-anchor { scroll-margin-top: 20px; }
+        .auth-visual { background-color: #172b2a; background-image: linear-gradient(rgba(215,237,159,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(215,237,159,.045) 1px, transparent 1px); background-size: 28px 28px; }
+        .table-head { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+        @media (prefers-reduced-motion: no-preference) { .enter { animation: enter .4s ease-out both; } @keyframes enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } }
+    </style>
+</head>
+<body>
+    <nav class="bg-[#172b2a] text-white px-5 md:px-8 py-4 flex justify-between items-center">
+        <a href="{% if session.get('role') == 'candidate' %}{{ url_for('candidate_dashboard') }}{% elif session.get('role') == 'recruiter' %}{{ url_for('recruiter_dashboard') }}{% elif session.get('role') == 'super_admin' %}{{ url_for('super_admin_dashboard') }}{% else %}/{% endif %}" class="flex items-center gap-3">
+            <span class="grid place-items-center w-8 h-8 rounded bg-[#d7ed9f] text-[#172b2a] font-extrabold">HS</span>
+            <span><span class="block font-extrabold text-sm tracking-tight">HIRESHIELD AI</span><span class="block text-[9px] text-emerald-100/70 uppercase tracking-[.18em]">Talent workspace</span></span>
+        </a>
+        {% if session.get('user_id') %}
+        <div class="flex items-center gap-3 md:gap-5">
+            <a href="{{ url_for('professional_profile') }}" class="flex items-center gap-2 hover:text-[#d7ed9f]" aria-label="Edit professional profile">
+                {% if session.get('profile_photo') %}<img class="h-9 w-9 rounded-full border border-white/30 object-cover" src="{{ url_for('profile_photo') }}" alt="Profile photo">
+                {% else %}<span class="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-xs font-bold">{{ session.get('user_name', 'U')[0]|upper }}</span>{% endif %}
+                <span class="hidden text-right sm:block"><span class="block text-xs font-semibold">{{ session.get('user_name') }}</span><span class="block text-[10px] text-emerald-100/70 uppercase">Profile · {{ session.get('role')|replace('_', ' ') }}</span></span>
+            </a>
+            <a href="{{ url_for('logout') }}" class="border border-white/25 hover:bg-white/10 px-3 py-2 rounded text-xs font-semibold transition">Sign out</a>
+        </div>
+        {% endif %}
+    </nav>
+    <main class="shell mx-auto px-4 py-6 md:px-8 md:py-9">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}{% for cat, msg in messages %}
+            <div class="mb-4 px-4 py-3 rounded border text-sm font-semibold {% if cat == 'danger' %}bg-rose-50 border-rose-200 text-rose-800{% else %}bg-emerald-50 border-emerald-200 text-emerald-900{% endif %}">{{ msg }}</div>
+          {% endfor %}{% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+    <script>
+        document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+            const input = document.getElementById(button.dataset.passwordToggle);
+            if (!input) return;
+            button.addEventListener('click', () => {
+                const visible = input.type === 'password';
+                input.type = visible ? 'text' : 'password';
+                button.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+                button.setAttribute('aria-pressed', String(visible));
+                button.querySelector('[data-eye-open]').classList.toggle('hidden', !visible);
+                button.querySelector('[data-eye-closed]').classList.toggle('hidden', visible);
+            });
+        });
+    </script>
+</body>
+</html>
